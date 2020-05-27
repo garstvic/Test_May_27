@@ -57,7 +57,9 @@ class TaskController extends Controller
      */
     public function show($id)
     {
-        //
+        $data=$this->_tasks->getTask($id);
+        
+        return response()->json($data);
     }
 
     /**
