@@ -23,7 +23,9 @@ class TaskController extends Controller
      */
     public function index()
     {
-        $data=$this->_tasks->getTasks();
+        $parameters=request()->input();
+        
+        $data=$this->_tasks->getTasks($parameters);
         
         return response()->json($data);
     }
