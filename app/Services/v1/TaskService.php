@@ -75,6 +75,40 @@ class TaskService
         return $this->filterTasks([$task]);
     }
     
+    public function updateTask($req,$id)
+    {
+        $task=Task::where('id',$id)->firstOrFail();
+        $status=Status::where('title',$req->input('status.title'))->firstOrFail();
+        $priority=Priority::where('title',$req->input('priority.title'))->firstOrFail();
+
+        $task->title=$req->input('title');
+        $task->due_date=$req->input('due_date');
+        $task->update();
+
+        $task_status=TaskStatus::where('task_id',$task->id)->firstOrFail();
+        $task_status->task_id=$task->id;
+        $task_status->status_id=$status->id;
+        $task_status->update();
+
+        $task_priority=TaskPriority::where('task_id',$task->id)->firstOrFail();
+        $task_priority->task_id=$task->id;
+        $task_priority->priority_id=$priority->id;
+        $task_priority->update();
+
+        return $this->filterTasks([$task]);
+    }
+    
+    public function deleteTask($id)
+    {
+        $task=Task::where('id',$id)->firstOrFail();
+        $task_status=TaskStatus::where('task_id',$task->id)->firstOrFail();
+        $task_priority=TaskPriority::where('task_id',$task->id)->firstOrFail();
+        
+        $task->delete();
+        $task_priority->delete();
+        $task_status->delete();
+    }
+    
     protected function filterTasks($tasks,$keys=[])
     {
         $data=[];
@@ -93,7 +127,9 @@ class TaskService
             }
         }
 
-        $data[]=$entry;
+        if(isset($entry)){
+            $data[]=$entry;
+        }
 
         return $data;
     }

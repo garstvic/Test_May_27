@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\v1;
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -69,7 +70,15 @@ class TaskController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        try{
+            $task=$this->_tasks->updateTask($request,$id);
+
+            return response()->json($task,200);
+        }catch(ModelNotFoundException $ex) {
+            throw $ex;
+        }catch(Exception $e){
+            return response()->json(['message'=>$e->getMessage()],500);
+        }
     }
 
     /**
@@ -80,6 +89,14 @@ class TaskController extends Controller
      */
     public function destroy($id)
     {
-        //
+        try{
+            $task=$this->_tasks->deleteTask($id);
+
+            return response()->make('',204);
+        }catch(ModelNotFoundException $ex) {
+            throw $ex;
+        }catch(Exception $e){
+            return response()->json(['message'=>$e->getMessage()],500);
+        }
     }
 }
