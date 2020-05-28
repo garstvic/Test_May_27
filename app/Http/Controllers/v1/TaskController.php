@@ -39,6 +39,8 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
+        $this->_tasks->validate($request->all());
+
         try{
             $task=$this->_tasks->createTask($request);
         

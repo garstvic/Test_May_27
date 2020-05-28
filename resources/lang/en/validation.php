@@ -116,6 +116,9 @@ return [
     'uploaded' => 'The :attribute failed to upload.',
     'url' => 'The :attribute format is invalid.',
     'uuid' => 'The :attribute must be a valid UUID.',
+    
+    'task_priority'=>'The :attribute field can only be Low, Normal or High',
+    'task_status'=>'The :attribute field can only be Created, In progress, Completed',
 
     /*
     |--------------------------------------------------------------------------

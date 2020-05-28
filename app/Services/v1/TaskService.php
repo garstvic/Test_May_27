@@ -7,6 +7,7 @@ use App\Status;
 use App\Task;
 use App\TaskPriority;
 use App\TaskStatus;
+use Validator;
 
 class TaskService
 {
@@ -18,6 +19,20 @@ class TaskService
         'status',
         'priority',
     ];
+    
+    protected $rules=[
+        'title'=>'required',
+        'due_date'=>'required|date',
+        'status.title'=>'required|task_status',
+        'priority.title'=>'required|task_priority',
+    ];
+    
+    public function validate($task)
+    {
+        $validator=Validator::make($task,$this->rules);
+        
+        $validator->validate();
+    }
     
     public function getTasks($parameters)
     {
