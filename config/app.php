@@ -176,6 +176,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         
         App\Providers\v1\TaskServiceProvider::class,
+        Laravel\Passport\PassportServiceProvider::class,
 
     ],
 

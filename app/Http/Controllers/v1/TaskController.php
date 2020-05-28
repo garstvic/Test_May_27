@@ -15,6 +15,8 @@ class TaskController extends Controller
     public function __construct(TaskService $service)
     {
         $this->_tasks=$service;
+        
+        $this->middleware('auth:api',['only'=>['store','update','destroy']]);
     }
     
     /**
