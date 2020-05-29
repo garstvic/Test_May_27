@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use GuzzleHttp\Client;
 
 class RegisterController extends Controller
 {
@@ -63,10 +64,24 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        return User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-        ]);
+        $client=new Client;
+
+        try {
+            $response=$client->request('POST','http://localhost/api/v1/auth/signup',[
+                'headers'=>[
+                    'Content-Type'=>'application/json',
+                    'X-Requested-With'=>'XMLHttpRequest',
+                ],
+                'json'=>$data
+            ]);
+        }catch(ClientException $e){
+            return $this->redirect()->route('login',$data);
+        }
+
+        if($response->getStatusCode()=='201'){
+            $access_token=json_decode($response->getBody());
+            request()->session()->put('user',$access_token);            
+            return User::where('email',$data['email'])->firstOrFail();
+        }
     }
 }

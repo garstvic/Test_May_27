@@ -16,7 +16,7 @@ class TaskController extends Controller
     {
         $this->_tasks=$service;
         
-        $this->middleware('auth:api',['only'=>['store','update','destroy']]);
+        $this->middleware('auth:api');
     }
     
     /**
@@ -27,7 +27,7 @@ class TaskController extends Controller
     public function index()
     {
         $parameters=request()->input();
-        
+
         $data=$this->_tasks->getTasks($parameters);
         
         return response()->json($data);
@@ -41,11 +41,12 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
+
         $this->_tasks->validate($request->all());
 
         try{
             $task=$this->_tasks->createTask($request);
-        
+
             return response()->json($task,201);
         }catch(Exception $e){
             return $response->json(['message'=>$e->getMessage()],500);

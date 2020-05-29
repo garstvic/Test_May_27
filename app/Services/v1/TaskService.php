@@ -37,30 +37,31 @@ class TaskService
     public function getTasks($parameters)
     {
         if(empty($parameters)){
-            return $this->filterTasks(Task::all());
+            return $this->filterTasks(Task::orderBy('id','ASC')->paginate(5));
         }
 
         $with_keys=$this->getWithKeys($parameters);
         $where_clauses=$this->getWhereClause($parameters);
+        $order_by=$this->getOrderBy($parameters);
 
         if (empty($where_clauses)){
-            return $this->filterTasks(Task::with($with_keys)->get());
+            return $this->filterTasks(Task::with($with_keys)->orderBy('id',$order_by)->paginate(5),$with_keys);
         }
 
         if(isset($where_clauses['status']) and isset($where_clauses['priority'])){
-            return $tasks=Task::priorityandstatusare($where_clauses['status'],$where_clauses['priority'])->get();
+            return $tasks=Task::priorityandstatusare($where_clauses['status'],$where_clauses['priority'])->orderBy('id',$order_by)->paginate(5);
         }
     
         if(isset($where_clauses['status'])){
-            return $tasks=Task::statusis($where_clauses['status'])->get();
+            return $tasks=Task::statusis($where_clauses['status'])->orderBy('id',$order_by)->paginate(5);
         }
 
-        return $tasks=Task::statusis($where_clauses['priority'])->get();
+        return $tasks=Task::statusis($where_clauses['priority'])->orderBy('id',$order_by)->paginate(5);
     }
-    
+
     public function getTask($id)
     {
-        return $this->filterTasks(Task::where('id',$id)->get());
+        return $this->filterTasks([Task::where('id',$id)->firstOrFail()],['status']);
     }
 
     public function createTask($req)
@@ -126,10 +127,11 @@ class TaskService
     
     protected function filterTasks($tasks,$keys=[])
     {
-        $data=[];
+        $data=$entry=[];
 
         foreach($tasks as $task){
             $entry[]=[
+                'id'=>$task->id,
                 'title'=>$task->title,
                 'due_date'=>$task->due_date,
                 'priority'=>$task->priority->title,
@@ -138,12 +140,19 @@ class TaskService
             ];
 
             if(in_array('status',$keys)){
-                $entry['status']=$task->status->title;
+                $entry[count($entry)-1]['status']=$task->status->title;
             }
         }
 
-        if(isset($entry)){
-            $data[]=$entry;
+        $data['data']=$entry;
+
+        if(is_array($tasks) xor true){
+            $data['pagination']=[
+                'total'=>$tasks->total(),
+                'last_page'=>$tasks->lastPage(),
+                'per_page'=>$tasks->perPage(),
+                'current_page'=>$tasks->currentpage(),
+            ];
         }
 
         return $data;
@@ -174,5 +183,16 @@ class TaskService
         }
 
         return $clause;
+    }
+    
+    protected function getOrderBy($parameters)
+    {
+        if(isset($parameters['order'])){
+            if(stripos($parameters['order'],'asc')===0 or stripos($parameters['order'],'desc')===0){
+                return $parameters['order'];
+            }
+        }
+
+        return 'ASC';
     }
 }

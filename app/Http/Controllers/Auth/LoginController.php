@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\User;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\Request;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 
 class LoginController extends Controller
 {
@@ -35,5 +39,33 @@ class LoginController extends Controller
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
+    }
+    
+    public function login(Request $request)
+    {
+        $credentials=request(['email','password']);
+
+        $client=new Client;
+
+        try{
+            $response=$client->request('POST','http://localhost/api/v1/auth/login',[
+                'headers'=>[
+                    'Content-Type'=>'application/json',
+                    'X-Requested-With'=>'XMLHttpRequest',
+                ],
+                'json'=>$credentials
+            ]);
+        }catch(ClientException $e){
+            return $this->sendFailedLoginResponse($request);
+        }
+
+        if($response->getStatusCode()=='200'){
+            if ($this->attemptLogin($request)){
+                $access_token=json_decode($response->getBody());
+                $request->session()->put('user',$access_token); 
+
+                return $this->sendLoginResponse($request);
+            }
+        }
     }
 }

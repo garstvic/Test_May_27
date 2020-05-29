@@ -28,8 +28,18 @@ class AuthController extends Controller
         ]);
 
         $user->save();
-        
-        return response()->json(['message'=>'Successfully created user!'],201);
+
+        $token_result=$user->createToken('Personal Access Token');
+        $token=$token_result->token;        
+
+        $token->save();
+
+        return response()->json([
+            'message'=>'Successfully created user!',
+            'access_token'=>$token_result->accessToken,
+            'token_type'=>"Bearer",
+            'expires_at'=>Carbon::parse($token_result->token->expires_at)->toDateTimeString(),
+        ],201);
     }
     
     /**
